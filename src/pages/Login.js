@@ -2,71 +2,198 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 const Login = () => {
+    const [isRegister, setIsRegister] = useState(false);
+    const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    const handleLogin = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault(); 
         
-        try {
-            // Pastikan URL mengarah ke IP 127.0.0.1 port 8000
-            const response = await axios.post('http://127.0.0.1:8000/api/login', {
-                email: email,
-                password: password
-            });
+        const url = isRegister 
+            ? 'http://127.0.0.1:8000/api/register' 
+            : 'http://127.0.0.1:8000/api/login';
 
-            // Simpan token yang dikirim Laravel ke memori browser
-            localStorage.setItem('token', response.data.access_token);
-            
-            alert("Selamat! Login Berhasil.");
-            
-            // Pindah ke halaman beranda
-            window.location.href = '/beranda';
+        const payload = isRegister 
+            ? { name, email, password } 
+            : { email, password };
+
+        try {
+            const response = await axios.post(url, payload);
+
+            if (isRegister) {
+                alert("Akun berhasil dibuat! Silakan login.");
+                setIsRegister(false);
+                setName('');
+            } else {
+                // --- BAGIAN UPDATE PENTING ---
+                // Simpan token untuk keamanan akses API
+                localStorage.setItem('token', response.data.access_token);
+                
+                // Simpan role (admin/user) untuk mengatur tampilan Beranda
+                localStorage.setItem('role', response.data.user.role);
+                
+                // Simpan nama untuk menyapa user di Beranda (Opsional)
+                localStorage.setItem('userName', response.data.user.name);
+
+                alert(`Selamat Datang, ${response.data.user.name}!`);
+                window.location.href = '/beranda';
+            }
 
         } catch (error) {
             console.error("Detail Error:", error.response);
-            
-            // Menampilkan pesan error spesifik dari Laravel jika ada
-            const pesanError = error.response?.data?.message || "Koneksi ke server gagal!";
-            alert("Login Gagal: " + pesanError);
+            const pesanError = error.response?.data?.message || "Email atau Password salah!";
+            alert("Gagal: " + pesanError);
         }
     };
 
     return (
-        <div style={{ textAlign: 'center', marginTop: '100px', fontFamily: 'Arial' }}>
-            <h1 style={{ color: 'red', letterSpacing: '2px' }}>CAHAYA SAKTI MOTOR</h1>
-            <div style={{ display: 'inline-block', border: '1px solid #ddd', padding: '40px', borderRadius: '15px', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}>
-                <h3 style={{ marginBottom: '20px' }}>Silahkan Login</h3>
-                <form onSubmit={handleLogin}>
-                    <div style={{ marginBottom: '15px', textAlign: 'left' }}>
-                        <label>Email:</label><br/>
+        <div style={containerStyle}>
+            <div style={cardStyle}>
+                <h1 style={logoStyle}>CAHAYA SAKTI MOTOR</h1>
+                <p style={{ color: '#666', fontSize: '14px', marginBottom: '20px' }}>
+                    Dealer Resmi Motor Honda Terpercaya
+                </p>
+                
+                <h3 style={{ marginBottom: '20px', color: '#333', fontWeight: 'bold' }}>
+                    {isRegister ? 'BUAT AKUN BARU' : 'SILAHKAN LOGIN'}
+                </h3>
+
+                <form onSubmit={handleSubmit}>
+                    {isRegister && (
+                        <div style={inputGroup}>
+                            <label style={labelStyle}>Nama Lengkap:</label>
+                            <input 
+                                type="text" 
+                                required 
+                                placeholder="Masukkan nama lengkap"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                style={inputStyle}
+                            />
+                        </div>
+                    )}
+
+                    <div style={inputGroup}>
+                        <label style={labelStyle}>Email:</label>
                         <input 
                             type="email" 
                             required 
                             placeholder="contoh@gmail.com"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            style={{ width: '280px', padding: '10px', marginTop: '5px', borderRadius: '5px', border: '1px solid #ccc' }}
+                            style={inputStyle}
                         />
                     </div>
-                    <div style={{ marginBottom: '25px', textAlign: 'left' }}>
-                        <label>Password:</label><br/>
+
+                    <div style={inputGroup}>
+                        <label style={labelStyle}>Password:</label>
                         <input 
                             type="password" 
                             required 
                             placeholder="Masukkan password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            style={{ width: '280px', padding: '10px', marginTop: '5px', borderRadius: '5px', border: '1px solid #ccc' }}
+                            style={inputStyle}
                         />
                     </div>
-                    <button type="submit" style={{ width: '100%', padding: '12px', background: 'red', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>
-                        MASUK KE SISTEM
+
+                    <button type="submit" style={btnSubmit}>
+                        {isRegister ? 'DAFTAR SEKARANG' : 'MASUK KE SISTEM'}
                     </button>
                 </form>
+
+                <p style={footerTextStyle}>
+                    {isRegister ? 'Sudah punya akun?' : 'Belum punya akun?'} 
+                    <span 
+                        onClick={() => setIsRegister(!isRegister)} 
+                        style={toggleLinkStyle}
+                    >
+                        {isRegister ? ' Login di sini' : ' Daftar di sini'}
+                    </span>
+                </p>
             </div>
         </div>
     );
+};
+
+// --- STYLING TETAP SAMA (KONSISTEN) ---
+const containerStyle = {
+    height: '100vh',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    background: 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)',
+    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
+};
+
+const cardStyle = {
+    backgroundColor: 'white',
+    padding: '40px',
+    borderRadius: '25px',
+    boxShadow: '0 15px 35px rgba(0,0,0,0.3)',
+    width: '100%',
+    maxWidth: '400px',
+    textAlign: 'center'
+};
+
+const logoStyle = {
+    color: '#e74c3c',
+    letterSpacing: '2px',
+    fontSize: '1.8rem',
+    fontWeight: 'bold',
+    margin: 0
+};
+
+const inputGroup = {
+    marginBottom: '15px',
+    textAlign: 'left'
+};
+
+const labelStyle = {
+    fontSize: '13px',
+    fontWeight: '600',
+    color: '#555',
+    marginLeft: '5px'
+};
+
+const inputStyle = {
+    width: '100%',
+    padding: '12px',
+    marginTop: '5px',
+    borderRadius: '10px',
+    border: '1px solid #ddd',
+    boxSizing: 'border-box',
+    fontSize: '14px',
+    outline: 'none'
+};
+
+const btnSubmit = {
+    width: '100%',
+    padding: '12px',
+    background: '#e74c3c',
+    color: 'white',
+    border: 'none',
+    borderRadius: '10px',
+    cursor: 'pointer',
+    fontWeight: 'bold',
+    fontSize: '16px',
+    marginTop: '15px',
+    boxShadow: '0 4px 15px rgba(231, 76, 60, 0.4)'
+};
+
+const footerTextStyle = {
+    marginTop: '25px',
+    fontSize: '14px',
+    color: '#666'
+};
+
+const toggleLinkStyle = {
+    color: '#e74c3c',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+    marginLeft: '5px',
+    textDecoration: 'none'
 };
 
 export default Login;
