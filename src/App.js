@@ -15,6 +15,7 @@ function App() {
                 <Route path="/beranda" element={<Beranda />} />
                 <Route path="/buat-pesanan/:motorId" element={<BuatPesanan />} />
                 <Route path="/pesanan-saya" element={<PesananSaya />} />
+
             </Routes>
         </Router>
     );

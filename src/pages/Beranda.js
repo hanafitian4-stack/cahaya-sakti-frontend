@@ -361,7 +361,7 @@ const menuItem = {
 };
 
 const bannerStyle = { 
-    background: 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url("https://images.unsplash.com/photo-1599819811279-d5ad9cccf838?q=80&w=2070")', 
+    background: 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url("beranda.png")', 
     height: '350px', 
     backgroundSize: 'cover', 
     backgroundPosition: 'center', 
