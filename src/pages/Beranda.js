@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 function Beranda() {
+    const navigate = useNavigate();
     const [motors, setMotors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showMenu, setShowMenu] = useState(false);
@@ -40,22 +42,15 @@ function Beranda() {
         fetchMotors();
     }, []);
 
-    // 2. Fungsi Pesan Motor
-    const handlePesanMotor = async (motorId) => {
+    // 2. Navigasi ke Halaman Buat Pesanan
+    const handlePesanMotor = (motorId) => {
         if (!token) {
             alert("Silakan login terlebih dahulu untuk memesan.");
+            navigate('/');
             return;
         }
-        try {
-            await axios.post('http://127.0.0.1:8000/api/orders',
-                { motor_id: motorId },
-                { headers: { 'Authorization': `Bearer ${token}` } }
-            );
-            alert("Pesanan Berhasil! Admin akan segera menghubungi Anda.");
-            setShowDetail(false);
-        } catch (err) {
-            alert("Gagal melakukan pemesanan. Pastikan backend orders sudah siap.");
-        }
+        setShowDetail(false);
+        navigate(`/buat-pesanan/${motorId}`);
     };
 
     // 3. Helper UI
@@ -88,16 +83,27 @@ function Beranda() {
             }
             setShowForm(false);
             fetchMotors();
-        } catch (err) { alert("Gagal menyimpan data."); }
+        } catch (err) { 
+            alert("Gagal menyimpan data."); 
+        }
     };
 
     const handleHapusMotor = async (id) => {
         if (window.confirm("Hapus motor ini?")) {
-            await axios.delete(`http://127.0.0.1:8000/api/motors/${id}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            fetchMotors();
+            try {
+                await axios.delete(`http://127.0.0.1:8000/api/motors/${id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                fetchMotors();
+            } catch (err) {
+                alert("Gagal menghapus data.");
+            }
         }
+    };
+
+    const handleLogout = () => {
+        localStorage.clear();
+        navigate('/');
     };
 
     return (
@@ -112,12 +118,13 @@ function Beranda() {
                 <motion.h2 
                     initial={{ x: -20 }} 
                     animate={{ x: 0 }} 
-                    style={{ color: '#e74c3c', margin: 0 }}
+                    style={{ color: '#e74c3c', margin: 0, cursor: 'pointer' }}
+                    onClick={() => window.location.reload()}
                 >
                     CAHAYA SAKTI MOTOR
                 </motion.h2>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <span>Halo, <b>{userName || 'User'}</b></span>
+                    <span>Halo, <b>{userName || 'User'}</b> ({userRole})</span>
                     <motion.button 
                         whileTap={{ scale: 0.8 }}
                         onClick={() => setShowMenu(!showMenu)} 
@@ -133,7 +140,12 @@ function Beranda() {
                                 exit={{ opacity: 0, y: -10 }}
                                 style={dropdownStyle}
                             >
-                                <div style={menuItem} onClick={() => { localStorage.clear(); window.location.href = '/'; } }>Logout</div>
+                                {userRole === 'admin' ? (
+                                    <div style={menuItem} onClick={() => navigate('/pesanan-masuk')}>📥 Pesanan Masuk</div>
+                                ) : (
+                                    <div style={menuItem} onClick={() => navigate('/pesanan-saya')}>📋 Pesanan Saya</div>
+                                )}
+                                <div style={{...menuItem, color: '#e74c3c', borderTop: '1px solid #eee'}} onClick={handleLogout}>Logout</div>
                             </motion.div>
                         )}
                     </AnimatePresence>
@@ -194,10 +206,10 @@ function Beranda() {
                                 <div style={{ padding: '20px' }}>
                                     <small style={{ color: '#e74c3c', fontWeight: 'bold' }}>{item.tipe}</small>
                                     <h4>{item.nama_model}</h4>
-                                    <h3>Rp {Number(item.harga).toLocaleString('id-ID')}</h3>
+                                    <h3 style={{ color: '#27ae60' }}>Rp {Number(item.harga).toLocaleString('id-ID')}</h3>
 
                                     {userRole === 'admin' ? (
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
                                             <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => openEditModal(item)} style={{ ...btnBuy, backgroundColor: '#f39c12' }}>Ubah</motion.button>
                                             <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => handleHapusMotor(item.id)} style={{ ...btnBuy, backgroundColor: '#333' }}>Hapus</motion.button>
                                         </div>
@@ -206,7 +218,7 @@ function Beranda() {
                                             whileHover={{ scale: 1.05, backgroundColor: '#c0392b' }}
                                             whileTap={{ scale: 0.95 }}
                                             onClick={() => openDetailModal(item)} 
-                                            style={btnBuy}
+                                            style={{...btnBuy, marginTop: '10px'}}
                                         >
                                             Detail Produk
                                         </motion.button>
@@ -250,8 +262,22 @@ function Beranda() {
                                     <h3 style={{ color: '#27ae60' }}>Rp {Number(selectedMotor.harga).toLocaleString('id-ID')}</h3>
                                     <p style={{ color: '#666', lineHeight: '1.6', margin: '20px 0' }}>{selectedMotor.deskripsi}</p>
                                     <div style={{ display: 'flex', gap: '10px' }}>
-                                        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => handlePesanMotor(selectedMotor.id)} style={{ ...btnBuy, flex: 2 }}>Pesan Sekarang</motion.button>
-                                        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setShowDetail(false)} style={{ ...btnAction, backgroundColor: '#95a5a6', flex: 1 }}>Tutup</motion.button>
+                                        <motion.button 
+                                            whileHover={{ scale: 1.05 }} 
+                                            whileTap={{ scale: 0.95 }} 
+                                            onClick={() => handlePesanMotor(selectedMotor.id)} 
+                                            style={{ ...btnBuy, flex: 2 }}
+                                        >
+                                            Pesan Sekarang
+                                        </motion.button>
+                                        <motion.button 
+                                            whileHover={{ scale: 1.05 }} 
+                                            whileTap={{ scale: 0.95 }} 
+                                            onClick={() => setShowDetail(false)} 
+                                            style={{ ...btnAction, backgroundColor: '#95a5a6', flex: 1 }}
+                                        >
+                                            Tutup
+                                        </motion.button>
                                     </div>
                                 </div>
                             </div>
@@ -295,20 +321,137 @@ function Beranda() {
     );
 }
 
-// --- STYLES (Tetap Sama) ---
-const navStyle = { backgroundColor: '#fff', padding: '15px 8%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', position: 'sticky', top: 0, zIndex: 99 };
-const btnMenu = { background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer' };
-const dropdownStyle = { position: 'absolute', right: '8%', top: '60px', backgroundColor: '#fff', boxShadow: '0 5px 20px rgba(0,0,0,0.1)', borderRadius: '8px', zIndex: 100 };
-const menuItem = { padding: '12px 25px', cursor: 'pointer' };
-const bannerStyle = { background: 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url("https://images.unsplash.com/photo-1599819811279-d5ad9cccf838?q=80&w=2070")', height: '350px', backgroundSize: 'cover', backgroundPosition: 'center', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center' };
-const gridStyle = { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '25px' };
-const cardStyle = { backgroundColor: '#fff', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 5px 15px rgba(0,0,0,0.05)', cursor: 'pointer' };
-const imgStyle = { width: '100%', height: '180px', objectFit: 'contain', padding: '10px' };
-const btnBuy = { width: '100%', padding: '12px', backgroundColor: '#e74c3c', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', transition: 'background 0.3s' };
-const btnAdmin = { backgroundColor: '#27ae60', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' };
-const modalOverlay = { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 };
-const modalContent = { backgroundColor: '#fff', padding: '30px', borderRadius: '20px', width: '450px' };
-const inputStyle = { width: '100%', padding: '10px', marginBottom: '15px', borderRadius: '8px', border: '1px solid #ddd', boxSizing: 'border-box' };
-const btnAction = { padding: '12px', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' };
+// --- STYLES ---
+const navStyle = { 
+    backgroundColor: '#fff', 
+    padding: '15px 8%', 
+    display: 'flex', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    boxShadow: '0 2px 10px rgba(0,0,0,0.05)', 
+    position: 'sticky', 
+    top: 0, 
+    zIndex: 99 
+};
+
+const btnMenu = { 
+    background: 'none', 
+    border: 'none', 
+    fontSize: '24px', 
+    cursor: 'pointer' 
+};
+
+const dropdownStyle = { 
+    position: 'absolute', 
+    right: '8%', 
+    top: '65px', 
+    backgroundColor: '#fff', 
+    boxShadow: '0 5px 20px rgba(0,0,0,0.1)', 
+    borderRadius: '12px', 
+    zIndex: 100, 
+    overflow: 'hidden', 
+    minWidth: '180px' 
+};
+
+const menuItem = { 
+    padding: '15px 20px', 
+    cursor: 'pointer', 
+    fontSize: '14px', 
+    transition: '0.3s' 
+};
+
+const bannerStyle = { 
+    background: 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url("https://images.unsplash.com/photo-1599819811279-d5ad9cccf838?q=80&w=2070")', 
+    height: '350px', 
+    backgroundSize: 'cover', 
+    backgroundPosition: 'center', 
+    color: '#fff', 
+    display: 'flex', 
+    flexDirection: 'column', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    textAlign: 'center' 
+};
+
+const gridStyle = { 
+    display: 'grid', 
+    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
+    gap: '25px' 
+};
+
+const cardStyle = { 
+    backgroundColor: '#fff', 
+    borderRadius: '15px', 
+    overflow: 'hidden', 
+    boxShadow: '0 5px 15px rgba(0,0,0,0.05)', 
+    cursor: 'pointer' 
+};
+
+const imgStyle = { 
+    width: '100%', 
+    height: '180px', 
+    objectFit: 'contain', 
+    padding: '10px' 
+};
+
+const btnBuy = { 
+    width: '100%', 
+    padding: '12px', 
+    backgroundColor: '#e74c3c', 
+    color: '#fff', 
+    border: 'none', 
+    borderRadius: '8px', 
+    cursor: 'pointer', 
+    fontWeight: 'bold', 
+    transition: 'background 0.3s' 
+};
+
+const btnAdmin = { 
+    backgroundColor: '#27ae60', 
+    color: '#fff', 
+    border: 'none', 
+    padding: '10px 20px', 
+    borderRadius: '8px', 
+    cursor: 'pointer', 
+    fontWeight: 'bold' 
+};
+
+const modalOverlay = { 
+    position: 'fixed', 
+    top: 0, 
+    left: 0, 
+    width: '100%', 
+    height: '100%', 
+    backgroundColor: 'rgba(0,0,0,0.7)', 
+    display: 'flex', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    zIndex: 1000 
+};
+
+const modalContent = { 
+    backgroundColor: '#fff', 
+    padding: '30px', 
+    borderRadius: '20px', 
+    width: '450px' 
+};
+
+const inputStyle = { 
+    width: '100%', 
+    padding: '10px', 
+    marginBottom: '15px', 
+    borderRadius: '8px', 
+    border: '1px solid #ddd', 
+    boxSizing: 'border-box' 
+};
+
+const btnAction = { 
+    padding: '12px', 
+    color: '#fff', 
+    border: 'none', 
+    borderRadius: '8px', 
+    cursor: 'pointer', 
+    fontWeight: 'bold' 
+};
 
 export default Beranda;
