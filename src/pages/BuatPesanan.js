@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
-// Library untuk PDF
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -11,12 +10,13 @@ const BuatPesanan = () => {
     const [motor, setMotor] = useState(null);
     const [isSuccess, setIsSuccess] = useState(false);
     const [orderData, setOrderData] = useState(null);
-    const strukRef = useRef(); // Referensi untuk menangkap gambar struk
+    const strukRef = useRef();
 
     const [formData, setFormData] = useState({
         nama_lengkap: '',
         nomor_wa: '',
         alamat: '',
+        warna: '', // Tambahan State Warna
         catatan: ''
     });
 
@@ -43,21 +43,19 @@ const BuatPesanan = () => {
                 nama_lengkap: formData.nama_lengkap,
                 nomor_wa: formData.nomor_wa,
                 alamat: formData.alamat,
+                warna: formData.warna, // Mengirim data warna ke backend
                 catatan: formData.catatan
             };
 
             const response = await axios.post('http://127.0.0.1:8000/api/pesanan', payload, config);
-            
-            // Simpan data hasil respons untuk ditampilkan di struk
             setOrderData(response.data.data || response.data); 
-            setIsSuccess(true); // Tampilkan modal struk
+            setIsSuccess(true);
         } catch (error) {
             const pesan = error.response?.data?.message || "Cek koneksi/validasi";
             alert("Gagal simpan: " + pesan);
         }
     };
 
-    // Fungsi Simpan PDF
     const downloadPDF = () => {
         const element = strukRef.current;
         html2canvas(element, { scale: 2 }).then((canvas) => {
@@ -77,7 +75,7 @@ const BuatPesanan = () => {
             <div style={contentContainer}>
                 <div style={leftSection}>
                     <h2 style={titleStyle}>Konfirmasi Pemesanan</h2>
-                    <p style={subtitleStyle}>Silakan lengkapi data diri Anda untuk melanjutkan proses pembelian unit motor.</p>
+                    <p style={subtitleStyle}>Silakan lengkapi data diri dan pilih warna motor Anda.</p>
                     
                     {motor && (
                         <div style={motorPreviewCard}>
@@ -100,13 +98,31 @@ const BuatPesanan = () => {
                             <label style={labelStyle}>Nomor WhatsApp</label>
                             <input style={inputStyle} type="number" placeholder="08..." onChange={e => setFormData({...formData, nomor_wa: e.target.value})} required />
                         </div>
+
+                        {/* --- INPUT PILIHAN WARNA --- */}
+                        <div style={inputGroup}>
+                            <label style={labelStyle}>Pilih Warna Motor</label>
+                            <select 
+                                style={inputStyle} 
+                                value={formData.warna} 
+                                onChange={e => setFormData({...formData, warna: e.target.value})} 
+                                required
+                            >
+                                <option value="">-- Pilih Warna Tersedia --</option>
+                                <option value="Hitam Metalik">Hitam Metalik</option>
+                                <option value="Merah Nyala">Merah Nyala</option>
+                                <option value="Putih Mutiara">Putih Mutiara</option>
+                                <option value="Biru Sporty">Biru Sporty</option>
+                            </select>
+                        </div>
+
                         <div style={inputGroup}>
                             <label style={labelStyle}>Alamat Pengiriman</label>
                             <textarea style={{...inputStyle, minHeight: '80px'}} placeholder="Alamat lengkap" onChange={e => setFormData({...formData, alamat: e.target.value})} required />
                         </div>
                         <div style={inputGroup}>
                             <label style={labelStyle}>Catatan Tambahan (Opsional)</label>
-                            <textarea style={{...inputStyle, minHeight: '60px'}} placeholder="Warna atau waktu pengiriman" onChange={e => setFormData({...formData, catatan: e.target.value})} />
+                            <textarea style={{...inputStyle, minHeight: '60px'}} placeholder="Contoh: Pengiriman sore hari" onChange={e => setFormData({...formData, catatan: e.target.value})} />
                         </div>
                         <div style={buttonGroup}>
                             <button type="submit" style={btnPrimary}>KONFIRMASI SEKARANG</button>
@@ -116,7 +132,7 @@ const BuatPesanan = () => {
                 </div>
             </div>
 
-            {/* MODAL STRUK (Hanya muncul jika isSuccess = true) */}
+            {/* MODAL STRUK */}
             {isSuccess && (
                 <div style={modalOverlay}>
                     <div style={modalContent}>
@@ -132,6 +148,7 @@ const BuatPesanan = () => {
                                 <p><strong>Nama Pembeli:</strong> {formData.nama_lengkap}</p>
                                 <p><strong>WhatsApp:</strong> {formData.nomor_wa}</p>
                                 <p><strong>Unit Motor:</strong> {motor?.nama_model}</p>
+                                <p><strong>Warna Pilihan:</strong> {formData.warna}</p> {/* Menampilkan Warna di Struk */}
                                 <p><strong>Total Harga:</strong> Rp {Number(motor?.harga).toLocaleString('id-ID')}</p>
                                 <p><strong>Alamat:</strong> {formData.alamat}</p>
                             </div>
@@ -150,15 +167,13 @@ const BuatPesanan = () => {
     );
 };
 
-// --- TAMBAHAN STYLES ---
+// --- STYLES (Sama seperti sebelumnya) ---
 const modalOverlay = { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 };
 const modalContent = { backgroundColor: 'white', padding: '30px', borderRadius: '20px', maxWidth: '450px', width: '90%' };
-const strukContainer = { backgroundColor: 'white', padding: '30px', color: '#000', fontFamily: 'Courier New, monospace' }; // Font struk
+const strukContainer = { backgroundColor: 'white', padding: '30px', color: '#000', fontFamily: 'Courier New, monospace' };
 const btnDownload = { flex: 1, padding: '14px', backgroundColor: '#e67e22', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold' };
 const btnFinish = { flex: 1, padding: '14px', backgroundColor: '#2d3436', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold' };
-
-// --- STYLES LAMA TETAP SAMA ---
-const pageWrapper = { minHeight: '100vh', backgroundImage: `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('/beground.png')`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed', paddingTop: '100px', paddingBottom: '40px', display: 'flex', alignItems: 'center' };
+const pageWrapper = { minHeight: '100vh', backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.26)), url('/beranda1.png')`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed', paddingTop: '100px', paddingBottom: '40px', display: 'flex', alignItems: 'center' };
 const contentContainer = { display: 'flex', flexWrap: 'wrap', gap: '40px', maxWidth: '1100px', margin: '0 auto', padding: '0 20px', alignItems: 'flex-start' };
 const leftSection = { flex: '1', minWidth: '300px', color: '#ffffff' };
 const formSection = { flex: '1.2', minWidth: '350px', backgroundColor: 'white', padding: '40px', borderRadius: '24px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)', border: '1px solid #eee' };
