@@ -6,11 +6,13 @@ const Login = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e) => {
-        e.preventDefault(); 
+        e.preventDefault();
+        setLoading(true);
         
-        // --- PERBAIKAN 1: Bersihkan sisa login lama ---
+        // Membersihkan sisa login lama
         localStorage.clear();
 
         const url = isRegister 
@@ -18,7 +20,7 @@ const Login = () => {
             : 'http://127.0.0.1:8000/api/login';
 
         const payload = isRegister 
-            ? { name, email, password, role: 'user' } // Default role saat daftar
+            ? { name, email, password, role: 'user' } 
             : { email, password };
 
         try {
@@ -29,12 +31,9 @@ const Login = () => {
                 setIsRegister(false);
                 setName('');
             } else {
-                // --- PERBAIKAN 2: Pastikan struktur data sesuai response Laravel ---
-                // Simpan token (Cek apakah backend mengirim 'token' atau 'access_token')
                 const token = response.data.token || response.data.access_token;
                 localStorage.setItem('token', token);
                 
-                // Simpan data user
                 if (response.data.user) {
                     localStorage.setItem('role', response.data.user.role);
                     localStorage.setItem('userName', response.data.user.name);
@@ -42,32 +41,30 @@ const Login = () => {
                     window.location.href = '/beranda';
                 }
             }
-
         } catch (error) {
-            console.error("Detail Error:", error.response);
-            // --- PERBAIKAN 3: Pesan error lebih spesifik agar tidak menebak-nebak ---
-            const pesanError = error.response?.data?.message || "Koneksi ke server gagal (Cek CORS)!";
+            const pesanError = error.response?.data?.message || "Koneksi ke server gagal!";
             alert("Gagal: " + pesanError);
+        } finally {
+            setLoading(false);
         }
     };
 
-    // ... (Styling tetap sama seperti kode Anda) ...
     return (
         <div style={containerStyle}>
             <div style={cardStyle}>
-                <h1 style={logoStyle}>CAHAYA SAKTI MOTOR</h1>
-                <p style={{ color: '#666', fontSize: '14px', marginBottom: '20px' }}>
-                    Dealer Resmi Motor Honda Terpercaya
-                </p>
+                <div style={logoWrapper}>
+                    <h1 style={logoStyle}>CAHAYA SAKTI</h1>
+                    <p style={subtitleStyle}>Dealer Resmi Motor Honda</p>
+                </div>
                 
-                <h3 style={{ marginBottom: '20px', color: '#333', fontWeight: 'bold' }}>
+                <h3 style={titleStyle}>
                     {isRegister ? 'BUAT AKUN BARU' : 'SILAHKAN LOGIN'}
                 </h3>
 
                 <form onSubmit={handleSubmit}>
                     {isRegister && (
                         <div style={inputGroup}>
-                            <label style={labelStyle}>Nama Lengkap:</label>
+                            <label style={labelStyle}>Nama Lengkap</label>
                             <input 
                                 type="text" 
                                 required 
@@ -80,7 +77,7 @@ const Login = () => {
                     )}
 
                     <div style={inputGroup}>
-                        <label style={labelStyle}>Email:</label>
+                        <label style={labelStyle}>Email</label>
                         <input 
                             type="email" 
                             required 
@@ -92,7 +89,7 @@ const Login = () => {
                     </div>
 
                     <div style={inputGroup}>
-                        <label style={labelStyle}>Password:</label>
+                        <label style={labelStyle}>Password</label>
                         <input 
                             type="password" 
                             required 
@@ -103,8 +100,8 @@ const Login = () => {
                         />
                     </div>
 
-                    <button type="submit" style={btnSubmit}>
-                        {isRegister ? 'DAFTAR SEKARANG' : 'MASUK KE SISTEM'}
+                    <button type="submit" style={loading ? btnDisabled : btnSubmit} disabled={loading}>
+                        {loading ? 'MEMPROSES...' : (isRegister ? 'DAFTAR SEKARANG' : 'MASUK KE SISTEM')}
                     </button>
                 </form>
 
@@ -122,15 +119,71 @@ const Login = () => {
     );
 };
 
-// ... (Gunakan styling yang sudah Anda buat tadi) ...
-const containerStyle = { height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', background: 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)', fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" };
-const cardStyle = { backgroundColor: 'white', padding: '40px', borderRadius: '25px', boxShadow: '0 15px 35px rgba(0,0,0,0.3)', width: '100%', maxWidth: '400px', textAlign: 'center' };
-const logoStyle = { color: '#e74c3c', letterSpacing: '2px', fontSize: '1.8rem', fontWeight: 'bold', margin: 0 };
-const inputGroup = { marginBottom: '15px', textAlign: 'left' };
-const labelStyle = { fontSize: '13px', fontWeight: '600', color: '#555', marginLeft: '5px' };
-const inputStyle = { width: '100%', padding: '12px', marginTop: '5px', borderRadius: '10px', border: '1px solid #ddd', boxSizing: 'border-box', fontSize: '14px', outline: 'none' };
-const btnSubmit = { width: '100%', padding: '12px', background: '#e74c3c', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px', marginTop: '15px', boxShadow: '0 4px 15px rgba(231, 76, 60, 0.4)' };
-const footerTextStyle = { marginTop: '25px', fontSize: '14px', color: '#666' };
-const toggleLinkStyle = { color: '#e74c3c', fontWeight: 'bold', cursor: 'pointer', marginLeft: '5px', textDecoration: 'none' };
+// --- STYLING (Modern UI) ---
+
+const containerStyle = { 
+    height: '100vh', 
+    display: 'flex', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    // Ganti URL ini dengan foto dealer atau motor Honda pilihan Anda
+    backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7)), url('login.png')`, 
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    fontFamily: "'Poppins', sans-serif" 
+};
+
+const cardStyle = { 
+    backgroundColor: 'rgba(173, 172, 172, 0.95)', 
+    padding: '40px', 
+    borderRadius: '30px', 
+    boxShadow: '0 25px 50px rgba(129, 127, 127, 0.5)', 
+    width: '90%', 
+    maxWidth: '420px', 
+    textAlign: 'center',
+    backdropFilter: 'blur(15px)', // Efek kaca
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+    color: '#fff'
+};
+
+const logoWrapper = { marginBottom: '30px' };
+const logoStyle = { color: '#ff4d4d', letterSpacing: '3px', fontSize: '2rem', fontWeight: '900', margin: 0, textShadow: '2px 2px 4px rgba(0,0,0,0.3)' };
+const subtitleStyle = { color: '#eee', fontSize: '13px', marginTop: '5px', letterSpacing: '1px' };
+const titleStyle = { marginBottom: '25px', fontSize: '18px', fontWeight: '600', letterSpacing: '1px' };
+
+const inputGroup = { marginBottom: '20px', textAlign: 'left' };
+const labelStyle = { fontSize: '12px', fontWeight: '500', color: '#ddd', marginBottom: '8px', display: 'block', marginLeft: '5px' };
+
+const inputStyle = { 
+    width: '100%', 
+    padding: '14px', 
+    borderRadius: '12px', 
+    border: 'none', 
+    backgroundColor: 'rgba(255, 255, 255, 0.9)', 
+    boxSizing: 'border-box', 
+    fontSize: '14px', 
+    color: '#333',
+    outline: 'none',
+    transition: '0.3s'
+};
+
+const btnSubmit = { 
+    width: '100%', 
+    padding: '14px', 
+    background: 'linear-gradient(45deg, #e74c3c, #c0392b)', 
+    color: 'white', 
+    border: 'none', 
+    borderRadius: '12px', 
+    cursor: 'pointer', 
+    fontWeight: 'bold', 
+    fontSize: '15px', 
+    marginTop: '10px', 
+    boxShadow: '0 10px 20px rgba(231, 76, 60, 0.3)',
+    transition: '0.3s transform'
+};
+
+const btnDisabled = { ...btnSubmit, opacity: 0.7, cursor: 'not-allowed' };
+const footerTextStyle = { marginTop: '25px', fontSize: '14px', color: '#eee' };
+const toggleLinkStyle = { color: '#ff4d4d', fontWeight: 'bold', cursor: 'pointer', marginLeft: '5px' };
 
 export default Login;

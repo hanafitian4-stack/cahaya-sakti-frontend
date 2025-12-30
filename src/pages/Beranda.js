@@ -161,13 +161,13 @@ function Beranda() {
                                 >
                                     {userRole === 'admin' ? (
                                         <>
-                                            <div style={menuItem} onClick={() => navigate('/pesanan-masuk')}>📥 Pesanan Masuk</div>
-                                            <div style={menuItem} onClick={() => navigate('/stok-barang')}>🏍️ Stok Barang</div>
+                                            <div style={menuItem} onClick={() => navigate('/pesanan-masuk')}> Pesanan Masuk</div>
+                                            <div style={menuItem} onClick={() => navigate('/stok-barang')}>Stok Barang</div>
                                         </>
                                     ) : (
-                                        <div style={menuItem} onClick={() => navigate('/pesanan-saya')}>📦 Pesanan Saya</div>
+                                        <div style={menuItem} onClick={() => navigate('/pesanan-saya')}> Pesanan Saya</div>
                                     )}
-                                    <div style={{...menuItem, color: '#e74c3c', borderTop: '1px solid #eee'}} onClick={handleLogout}>🚪 Logout</div>
+                                    <div style={{...menuItem, color: '#e74c3c', borderTop: '1px solid #eee'}} onClick={handleLogout}> Logout</div>
                                 </motion.div>
                             )}
                         </AnimatePresence>
@@ -260,7 +260,7 @@ function Beranda() {
                             style={{ ...modalContent, maxHeight: '90vh', overflowY: 'auto' }}
                         >
                             <h3 style={{marginTop: 0, borderBottom: '1px solid #eee', paddingBottom: '10px'}}>
-                                {isEditing ? "📝 Ubah Data Motor" : "➕ Tambah Motor Baru"}
+                                {isEditing ? "Ubah Data Motor" : "➕ Tambah Motor Baru"}
                             </h3>
                             <form onSubmit={handleSimpanMotor}>
                                 <label style={labelStyle}>Nama Model</label>

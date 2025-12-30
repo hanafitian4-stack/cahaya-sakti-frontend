@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // Tambahkan Link
 
 const PesananSaya = () => {
     const [pesanan, setPesanan] = useState([]);
@@ -22,7 +22,6 @@ const PesananSaya = () => {
                         Accept: 'application/json' 
                     } 
                 };
-                // Memanggil API pesanan (memastikan Laravel mengembalikan data warna)
                 const response = await axios.get('http://127.0.0.1:8000/api/pesanan', config);
                 setPesanan(response.data);
                 setLoading(false);
@@ -34,19 +33,13 @@ const PesananSaya = () => {
         fetchPesanan();
     }, [token, navigate]);
 
-    // FUNGSI STATUS DINAMIS (Disesuaikan dengan logika Admin)
     const getStatusStyle = (status) => {
         const base = { padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase' };
-        
         switch (status) {
-            case 'pending':
-                return { ...base, backgroundColor: '#fff3cd', color: '#856404' };
-            case 'diterima': // Status sukses dari Admin
-                return { ...base, backgroundColor: '#d4edda', color: '#155724' };
-            case 'ditolak': // Status penolakan dari Admin
-                return { ...base, backgroundColor: '#f8d7da', color: '#721c24' };
-            default:
-                return { ...base, backgroundColor: '#eee', color: '#333' };
+            case 'pending': return { ...base, backgroundColor: '#fff3cd', color: '#856404' };
+            case 'diterima': return { ...base, backgroundColor: '#d4edda', color: '#155724' };
+            case 'ditolak': return { ...base, backgroundColor: '#f8d7da', color: '#721c24' };
+            default: return { ...base, backgroundColor: '#eee', color: '#333' };
         }
     };
 
@@ -55,7 +48,7 @@ const PesananSaya = () => {
             <div style={contentContainer}>
                 <div style={headerSection}>
                     <h2 style={titleStyle}>Pesanan Saya</h2>
-                    <p style={subtitleStyle}>Pantau status unit motor dan pilihan warna yang Anda pesan.</p>
+                    <p style={subtitleStyle}>Pantau status unit motor dan simpan bukti pesanan Anda.</p>
                 </div>
 
                 <div style={tableCard}>
@@ -66,47 +59,37 @@ const PesananSaya = () => {
                             <table style={tableStyle}>
                                 <thead>
                                     <tr style={headerRow}>
-                                        <th style={thStyle}>UNIT MOTOR & WARNA</th>
+                                        <th style={thStyle}>UNIT MOTOR</th>
                                         <th style={thStyle}>PEMESAN</th>
                                         <th style={thStyle}>STATUS</th>
-                                        <th style={thStyle}>TANGGAL</th>
+                                        <th style={thStyle}>AKSI</th> {/* Kolom Baru */}
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {pesanan.length > 0 ? pesanan.map((item) => (
                                         <tr key={item.id} style={rowStyle}>
                                             <td style={tdStyle}>
-                                                <div style={{fontWeight: 'bold', color: '#2d3436'}}>
-                                                    {item.motor?.nama_model || 'Unit Tidak Diketahui'}
-                                                </div>
-                                                {/* MENAMPILKAN WARNA DI SINI */}
-                                                <div style={{fontSize: '12px', color: '#e67e22', fontWeight: '600'}}>
-                                                    Pilihan Warna: {item.warna || '-'}
-                                                </div>
-                                                <div style={{fontSize: '11px', color: '#95a5a6'}}>ID: #{item.id}</div>
+                                                <div style={{fontWeight: 'bold'}}>{item.motor?.nama_model || 'Unit Tidak Diketahui'}</div>
+                                                <div style={{fontSize: '11px', color: '#e67e22'}}>{item.warna || '-'}</div>
                                             </td>
                                             <td style={tdStyle}>{item.nama_lengkap}</td>
                                             <td style={tdStyle}>
-                                                <span style={getStatusStyle(item.status)}>
-                                                    {item.status || 'PROSES'}
-                                                </span>
+                                                <span style={getStatusStyle(item.status)}>{item.status || 'PROSES'}</span>
                                             </td>
                                             <td style={tdStyle}>
-                                                {new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                                {/* Tombol ke halaman detail */}
+                                                <Link to={`/detail-pesanan/${item.id}`} style={btnDetail}>
+                                                    Lihat Detail
+                                                </Link>
                                             </td>
                                         </tr>
                                     )) : (
-                                        <tr>
-                                            <td colSpan="4" style={{padding: '40px', textAlign: 'center', color: '#636e72'}}>
-                                                Belum ada riwayat transaksi ditemukan.
-                                            </td>
-                                        </tr>
+                                        <tr><td colSpan="4" style={{padding: '40px', textAlign: 'center'}}>Belum ada transaksi.</td></tr>
                                     )}
                                 </tbody>
                             </table>
                         </div>
                     )}
-                    
                     <div style={{marginTop: '30px', textAlign: 'center'}}>
                         <button onClick={() => navigate('/beranda')} style={btnBack}>KEMBALI KE BERANDA</button>
                     </div>
@@ -116,7 +99,18 @@ const PesananSaya = () => {
     );
 };
 
-// --- STYLES ---
+const btnDetail = {
+    padding: '8px 16px',
+    backgroundColor: '#3498db',
+    color: 'white',
+    textDecoration: 'none',
+    borderRadius: '8px',
+    fontSize: '12px',
+    fontWeight: 'bold',
+    display: 'inline-block'
+};
+
+// ... (Gunakan Styles yang sudah Anda miliki sebelumnya)
 const pageWrapper = { minHeight: '100vh', backgroundImage: `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('/beranda1.png')`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed', paddingTop: '80px', paddingBottom: '40px' };
 const contentContainer = { maxWidth: '1000px', margin: '0 auto', padding: '0 20px' };
 const headerSection = { marginBottom: '30px' };
