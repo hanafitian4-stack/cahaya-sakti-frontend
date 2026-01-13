@@ -37,7 +37,6 @@ function Beranda() {
     const fetchMotors = async () => {
         setLoading(true);
         try {
-            // Rute GET untuk katalog tetap rute publik
             const response = await axios.get('http://127.0.0.1:8000/api/motors');
             setMotors(Array.isArray(response.data) ? response.data : []);
         } catch (error) {
@@ -79,7 +78,6 @@ function Beranda() {
         setShowForm(true);
     };
 
-    // --- PERBAIKAN FUNGSI SIMPAN ---
     const handleSimpanMotor = async (e) => {
         e.preventDefault();
         const dataToSubmit = { ...formData, stok: parseInt(formData.stok) };
@@ -93,13 +91,11 @@ function Beranda() {
             };
 
             if (isEditing) {
-                // PERBAIKAN: Tambahkan /admin/ dan gunakan Method Spoofing (_method: 'PUT')
                 await axios.post(`http://127.0.0.1:8000/api/admin/motors/${editId}`, {
                     ...dataToSubmit,
                     _method: 'PUT' 
                 }, config);
             } else {
-                // PERBAIKAN: Tambahkan /admin/ untuk rute tambah data
                 await axios.post('http://127.0.0.1:8000/api/admin/motors', dataToSubmit, config);
             }
 
@@ -108,11 +104,10 @@ function Beranda() {
             alert("Data berhasil disimpan!");
         } catch (err) { 
             console.error("Error Detail:", err.response);
-            alert(err.response?.data?.message || "Gagal menyimpan data. Pastikan Anda login sebagai Admin."); 
+            alert(err.response?.data?.message || "Gagal menyimpan data."); 
         }
     };
 
-    // --- PERBAIKAN FUNGSI HAPUS ---
     const handleHapusMotor = async (id) => {
         if (window.confirm("Hapus motor ini secara permanen?")) {
             try {
@@ -122,13 +117,11 @@ function Beranda() {
                         'Accept': 'application/json'
                     } 
                 };
-                // PERBAIKAN: Tambahkan /admin/ pada URL Delete
                 await axios.delete(`http://127.0.0.1:8000/api/admin/motors/${id}`, config);
                 alert("Data berhasil dihapus!");
                 fetchMotors();
             } catch (err) {
-                console.error("Error Detail:", err.response);
-                alert(err.response?.data?.message || "Gagal menghapus data.");
+                alert("Gagal menghapus data.");
             }
         }
     };
@@ -138,7 +131,6 @@ function Beranda() {
         navigate('/');
     };
 
-    // --- SISANYA TETAP SAMA (UI & STYLES) ---
     return (
         <motion.div 
             initial={{ opacity: 0 }} 
@@ -163,13 +155,18 @@ function Beranda() {
                         <AnimatePresence>
                             {showMenu && (
                                 <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} style={styles.dropdown}>
+                                    {/* MENU LOGIC BERDASARKAN ROLE */}
                                     {userRole === 'admin' ? (
                                         <>
                                             <div style={styles.menuItem} onClick={() => navigate('/pesanan-masuk')}>Pesanan Masuk</div>
                                             <div style={styles.menuItem} onClick={() => navigate('/stok-barang')}>Stok Barang</div>
                                         </>
                                     ) : (
-                                        <div style={styles.menuItem} onClick={() => navigate('/pesanan-saya')}>Pesanan Saya</div>
+                                        <>
+                                            <div style={styles.menuItem} onClick={() => navigate('/pesanan-saya')}>Pesanan Saya</div>
+                                            <div style={styles.menuItem} onClick={() => navigate('/profil-perusahaan')}>Profil Perusahaan</div>
+                                            {/* TOMBOL PROFIL YANG BARU DITAMBAHKAN */}
+                                        </>
                                     )}
                                     <div style={{...styles.menuItem, color: theme.danger, borderTop: `1px solid ${theme.border}`}} onClick={handleLogout}>Logout</div>
                                 </motion.div>
@@ -179,6 +176,7 @@ function Beranda() {
                 </div>
             </nav>
 
+            {/* Konten Banner & Katalog Tetap Sama */}
             <div style={styles.banner}>
                 <motion.h1 initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }} style={{ fontSize: '48px', fontWeight: '900', marginBottom: '10px' }}>
                     TEMUKAN MOTOR IMPIANMU
@@ -233,6 +231,7 @@ function Beranda() {
                 )}
             </div>
 
+            {/* Modal Detail & Form tetap di sini... */}
             <AnimatePresence>
                 {(showForm || (showDetail && selectedMotor)) && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={styles.modalOverlay} onClick={() => {setShowForm(false); setShowDetail(false)}}>
@@ -246,9 +245,9 @@ function Beranda() {
                                     <h3 style={{marginTop: 0, marginBottom: '25px'}}>{isEditing ? "Edit Unit Motor" : "Tambah Unit Baru"}</h3>
                                     <form onSubmit={handleSimpanMotor}>
                                         <label style={styles.label}>Nama Model</label>
-                                        <input style={styles.input} value={formData.nama_model} onChange={e => setFormData({ ...formData, nama_model: e.target.value })} required placeholder="Contoh: Vario 160" />
+                                        <input style={styles.input} value={formData.nama_model} onChange={e => setFormData({ ...formData, nama_model: e.target.value })} required />
                                         <label style={styles.label}>Tipe</label>
-                                        <input style={styles.input} value={formData.tipe} onChange={e => setFormData({ ...formData, tipe: e.target.value })} required placeholder="Contoh: Matic" />
+                                        <input style={styles.input} value={formData.tipe} onChange={e => setFormData({ ...formData, tipe: e.target.value })} required />
                                         <div style={{ display: 'flex', gap: '15px' }}>
                                             <div style={{ flex: 1 }}><label style={styles.label}>Harga</label><input style={styles.input} type="number" value={formData.harga} onChange={e => setFormData({ ...formData, harga: e.target.value })} required /></div>
                                             <div style={{ flex: 1 }}><label style={styles.label}>Stok</label><input style={styles.input} type="number" value={formData.stok} onChange={e => setFormData({ ...formData, stok: e.target.value })} required /></div>
@@ -273,7 +272,6 @@ function Beranda() {
                                         <h2 style={{ margin: '15px 0 10px 0' }}>{selectedMotor.nama_model}</h2>
                                         <h3 style={{ color: theme.success }}>Rp {Number(selectedMotor.harga).toLocaleString('id-ID')}</h3>
                                         <p style={{ color: theme.textSub, lineHeight: '1.8', margin: '20px 0' }}>{selectedMotor.deskripsi}</p>
-                                        <p style={{ fontSize: '14px' }}><b>Ketersediaan:</b> {selectedMotor.stok} Unit Ready</p>
                                         <div style={{ display: 'flex', gap: '12px', marginTop: '30px' }}>
                                             <button onClick={() => handlePesanMotor(selectedMotor.id)} style={{ ...styles.btnPrimary, flex: 2 }}>Pesan Sekarang</button>
                                             <button onClick={() => setShowDetail(false)} style={{ ...styles.btnSmall, flex: 1, backgroundColor: theme.card, border: `1px solid ${theme.border}` }}>Kembali</button>
@@ -289,6 +287,7 @@ function Beranda() {
     );
 }
 
+// --- STYLES (Tetap Sama) ---
 const styles = {
     nav: { backgroundColor: theme.card, padding: '15px 8%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.4)', position: 'sticky', top: 0, zIndex: 99, borderBottom: `1px solid ${theme.border}` },
     btnMenu: { background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: theme.textMain, padding: '0 10px' },

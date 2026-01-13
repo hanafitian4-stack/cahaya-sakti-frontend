@@ -11,8 +11,6 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        
-        // Membersihkan sisa login lama
         localStorage.clear();
 
         const url = isRegister 
@@ -54,7 +52,7 @@ const Login = () => {
             <div style={cardStyle}>
                 <div style={logoWrapper}>
                     <h1 style={logoStyle}>CAHAYA SAKTI</h1>
-                    <p style={subtitleStyle}>Dealer Resmi Motor Honda</p>
+                    <p style={subtitleStyle}>DEALER RESMI SEPEDA MOTOR HONDA</p>
                 </div>
                 
                 <h3 style={titleStyle}>
@@ -119,71 +117,71 @@ const Login = () => {
     );
 };
 
-// --- STYLING (Modern UI) ---
+// --- STYLING (Dark Theme UI) ---
 
 const containerStyle = { 
     height: '100vh', 
     display: 'flex', 
     justifyContent: 'center', 
     alignItems: 'center', 
-    // Ganti URL ini dengan foto dealer atau motor Honda pilihan Anda
-    backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7)), url('login.png')`, 
+    backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.85)), url('login.png')`, 
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     fontFamily: "'Poppins', sans-serif" 
 };
 
 const cardStyle = { 
-    backgroundColor: 'rgba(173, 172, 172, 0.95)', 
+    backgroundColor: 'rgba(26, 32, 44, 0.9)', // Abu-abu gelap transparan
     padding: '40px', 
-    borderRadius: '30px', 
-    boxShadow: '0 25px 50px rgba(129, 127, 127, 0.5)', 
+    borderRadius: '24px', 
+    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5)', 
     width: '90%', 
-    maxWidth: '420px', 
+    maxWidth: '400px', 
     textAlign: 'center',
-    backdropFilter: 'blur(15px)', // Efek kaca
-    border: '1px solid rgba(255, 255, 255, 0.2)',
+    backdropFilter: 'blur(10px)', 
+    border: '1px solid rgba(255, 255, 255, 0.1)',
     color: '#fff'
 };
 
-const logoWrapper = { marginBottom: '30px' };
-const logoStyle = { color: '#ff4d4d', letterSpacing: '3px', fontSize: '2rem', fontWeight: '900', margin: 0, textShadow: '2px 2px 4px rgba(0,0,0,0.3)' };
-const subtitleStyle = { color: '#eee', fontSize: '13px', marginTop: '5px', letterSpacing: '1px' };
-const titleStyle = { marginBottom: '25px', fontSize: '18px', fontWeight: '600', letterSpacing: '1px' };
+const logoWrapper = { marginBottom: '25px' };
+const logoStyle = { color: '#e53e3e', letterSpacing: '2px', fontSize: '1.8rem', fontWeight: '900', margin: 0 };
+const subtitleStyle = { color: '#a0aec0', fontSize: '11px', marginTop: '5px', letterSpacing: '2px', fontWeight: 'bold' };
+const titleStyle = { marginBottom: '25px', fontSize: '16px', fontWeight: '600', color: '#edf2f7', letterSpacing: '0.5px' };
 
-const inputGroup = { marginBottom: '20px', textAlign: 'left' };
-const labelStyle = { fontSize: '12px', fontWeight: '500', color: '#ddd', marginBottom: '8px', display: 'block', marginLeft: '5px' };
+const inputGroup = { marginBottom: '18px', textAlign: 'left' };
+const labelStyle = { fontSize: '12px', fontWeight: '500', color: '#cbd5e0', marginBottom: '8px', display: 'block', marginLeft: '2px' };
 
 const inputStyle = { 
     width: '100%', 
     padding: '14px', 
     borderRadius: '12px', 
-    border: 'none', 
-    backgroundColor: 'rgba(255, 255, 255, 0.9)', 
+    border: '1px solid #4a5568', 
+    backgroundColor: '#2d3748', 
     boxSizing: 'border-box', 
     fontSize: '14px', 
-    color: '#333',
+    color: '#fff',
     outline: 'none',
     transition: '0.3s'
 };
 
 const btnSubmit = { 
     width: '100%', 
-    padding: '14px', 
-    background: 'linear-gradient(45deg, #e74c3c, #c0392b)', 
+    padding: '15px', 
+    background: '#e53e3e', // Merah Khas Honda
     color: 'white', 
     border: 'none', 
     borderRadius: '12px', 
     cursor: 'pointer', 
-    fontWeight: 'bold', 
-    fontSize: '15px', 
+    fontWeight: '900', 
+    fontSize: '14px', 
     marginTop: '10px', 
-    boxShadow: '0 10px 20px rgba(231, 76, 60, 0.3)',
-    transition: '0.3s transform'
+    boxShadow: '0 10px 15px -3px rgba(229, 62, 62, 0.4)',
+    transition: '0.2s',
+    letterSpacing: '1px'
 };
 
-const btnDisabled = { ...btnSubmit, opacity: 0.7, cursor: 'not-allowed' };
-const footerTextStyle = { marginTop: '25px', fontSize: '14px', color: '#eee' };
-const toggleLinkStyle = { color: '#ff4d4d', fontWeight: 'bold', cursor: 'pointer', marginLeft: '5px' };
+const btnDisabled = { ...btnSubmit, opacity: 0.5, cursor: 'not-allowed' };
+const footerTextStyle = { marginTop: '25px', fontSize: '13px', color: '#a0aec0' };
+const toggleLinkStyle = { color: '#f56565', fontWeight: 'bold', cursor: 'pointer', marginLeft: '5px' };
 
 export default Login;

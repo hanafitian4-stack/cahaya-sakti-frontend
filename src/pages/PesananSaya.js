@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate, Link } from 'react-router-dom'; // Tambahkan Link
+import { useNavigate, Link } from 'react-router-dom';
 
 const PesananSaya = () => {
     const [pesanan, setPesanan] = useState([]);
@@ -35,11 +35,12 @@ const PesananSaya = () => {
 
     const getStatusStyle = (status) => {
         const base = { padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase' };
-        switch (status) {
-            case 'pending': return { ...base, backgroundColor: '#fff3cd', color: '#856404' };
-            case 'diterima': return { ...base, backgroundColor: '#d4edda', color: '#155724' };
-            case 'ditolak': return { ...base, backgroundColor: '#f8d7da', color: '#721c24' };
-            default: return { ...base, backgroundColor: '#eee', color: '#333' };
+        switch (status?.toLowerCase()) {
+            case 'pending': return { ...base, backgroundColor: '#f6ad55', color: '#fff' };
+            case 'diterima': return { ...base, backgroundColor: '#48bb78', color: '#fff' };
+            case 'lunas': return { ...base, backgroundColor: '#38b2ac', color: '#fff' };
+            case 'ditolak': return { ...base, backgroundColor: '#f56565', color: '#fff' };
+            default: return { ...base, backgroundColor: '#4a5568', color: '#fff' };
         }
     };
 
@@ -48,12 +49,12 @@ const PesananSaya = () => {
             <div style={contentContainer}>
                 <div style={headerSection}>
                     <h2 style={titleStyle}>Pesanan Saya</h2>
-                    <p style={subtitleStyle}>Pantau status unit motor dan simpan bukti pesanan Anda.</p>
+                    <p style={subtitleStyle}>Pantau status unit motor dan akses bukti transaksi Anda.</p>
                 </div>
 
                 <div style={tableCard}>
                     {loading ? (
-                        <p style={{textAlign: 'center', color: '#636e72'}}>Memuat data transaksi...</p>
+                        <p style={{textAlign: 'center', color: '#a0aec0', padding: '20px'}}>Memuat data transaksi...</p>
                     ) : (
                         <div style={{ overflowX: 'auto' }}>
                             <table style={tableStyle}>
@@ -62,36 +63,42 @@ const PesananSaya = () => {
                                         <th style={thStyle}>UNIT MOTOR</th>
                                         <th style={thStyle}>PEMESAN</th>
                                         <th style={thStyle}>STATUS</th>
-                                        <th style={thStyle}>AKSI</th> {/* Kolom Baru */}
+                                        <th style={thStyle}>AKSI</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {pesanan.length > 0 ? pesanan.map((item) => (
                                         <tr key={item.id} style={rowStyle}>
                                             <td style={tdStyle}>
-                                                <div style={{fontWeight: 'bold'}}>{item.motor?.nama_model || 'Unit Tidak Diketahui'}</div>
-                                                <div style={{fontSize: '11px', color: '#e67e22'}}>{item.warna || '-'}</div>
+                                                <div style={{fontWeight: 'bold', color: '#fff'}}>{item.motor?.nama_model || 'Unit Tidak Diketahui'}</div>
+                                                <div style={{fontSize: '11px', color: '#f6ad55'}}>{item.warna || '-'}</div>
                                             </td>
                                             <td style={tdStyle}>{item.nama_lengkap}</td>
                                             <td style={tdStyle}>
                                                 <span style={getStatusStyle(item.status)}>{item.status || 'PROSES'}</span>
                                             </td>
                                             <td style={tdStyle}>
-                                                {/* Tombol ke halaman detail */}
                                                 <Link to={`/detail-pesanan/${item.id}`} style={btnDetail}>
-                                                    Lihat Detail
+                                                    Lihat Detail 📄
                                                 </Link>
                                             </td>
                                         </tr>
                                     )) : (
-                                        <tr><td colSpan="4" style={{padding: '40px', textAlign: 'center'}}>Belum ada transaksi.</td></tr>
+                                        <tr>
+                                            <td colSpan="4" style={{padding: '60px', textAlign: 'center', color: '#718096'}}>
+                                                Belum ada riwayat transaksi.
+                                            </td>
+                                        </tr>
                                     )}
                                 </tbody>
                             </table>
                         </div>
                     )}
-                    <div style={{marginTop: '30px', textAlign: 'center'}}>
-                        <button onClick={() => navigate('/beranda')} style={btnBack}>KEMBALI KE BERANDA</button>
+                    
+                    <div style={{marginTop: '40px', textAlign: 'center'}}>
+                        <button onClick={() => navigate('/beranda')} style={btnBack}>
+                            KEMBALI KE BERANDA
+                        </button>
                     </div>
                 </div>
             </div>
@@ -99,29 +106,80 @@ const PesananSaya = () => {
     );
 };
 
-const btnDetail = {
-    padding: '8px 16px',
-    backgroundColor: '#3498db',
-    color: 'white',
-    textDecoration: 'none',
-    borderRadius: '8px',
-    fontSize: '12px',
-    fontWeight: 'bold',
-    display: 'inline-block'
+// --- STYLES (Tema Gelap / Dark Mode) ---
+const pageWrapper = { 
+    minHeight: '100vh', 
+    backgroundImage: `linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('/beranda1.png')`, 
+    backgroundSize: 'cover', 
+    backgroundPosition: 'center', 
+    backgroundAttachment: 'fixed', 
+    paddingTop: '80px', 
+    paddingBottom: '40px' 
 };
 
-// ... (Gunakan Styles yang sudah Anda miliki sebelumnya)
-const pageWrapper = { minHeight: '100vh', backgroundImage: `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('/beranda1.png')`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed', paddingTop: '80px', paddingBottom: '40px' };
 const contentContainer = { maxWidth: '1000px', margin: '0 auto', padding: '0 20px' };
-const headerSection = { marginBottom: '30px' };
-const titleStyle = { fontSize: '32px', color: '#ffffff', fontWeight: '850', marginBottom: '10px' };
-const subtitleStyle = { fontSize: '16px', color: '#ffffff', opacity: '0.9' };
-const tableCard = { backgroundColor: 'white', padding: '30px', borderRadius: '24px', boxShadow: '0 15px 35px rgba(0,0,0,0.2)', border: '1px solid #eee' };
+
+const headerSection = { marginBottom: '40px', textAlign: 'left' };
+
+const titleStyle = { fontSize: '36px', color: '#ffffff', fontWeight: '900', marginBottom: '10px', letterSpacing: '-1px' };
+
+const subtitleStyle = { fontSize: '16px', color: '#a0aec0', fontWeight: '400' };
+
+const tableCard = { 
+    backgroundColor: '#2d3748', 
+    padding: '30px', 
+    borderRadius: '20px', 
+    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', 
+    border: '1px solid #4a5568' 
+};
+
 const tableStyle = { width: '100%', borderCollapse: 'collapse' };
-const headerRow = { borderBottom: '2px solid #f1f1f1' };
-const thStyle = { padding: '15px', textAlign: 'left', color: '#2d3436', fontSize: '13px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' };
-const rowStyle = { borderBottom: '1px solid #f9f9f9', transition: '0.3s' };
-const tdStyle = { padding: '20px 15px', color: '#2d3436', fontSize: '14px', verticalAlign: 'middle' };
-const btnBack = { padding: '14px 30px', backgroundColor: '#2d3436', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', transition: '0.3s' };
+
+const headerRow = { borderBottom: '2px solid #4a5568' };
+
+const thStyle = { 
+    padding: '15px', 
+    textAlign: 'left', 
+    color: '#cbd5e0', 
+    fontSize: '12px', 
+    fontWeight: 'bold', 
+    textTransform: 'uppercase', 
+    letterSpacing: '1px' 
+};
+
+const rowStyle = { 
+    borderBottom: '1px solid #4a5568',
+    transition: 'background 0.2s ease-in-out',
+};
+
+const tdStyle = { 
+    padding: '20px 15px', 
+    color: '#e2e8f0', 
+    fontSize: '14px', 
+    verticalAlign: 'middle' 
+};
+
+const btnDetail = {
+    padding: '8px 16px',
+    backgroundColor: '#3182ce',
+    color: 'white',
+    textDecoration: 'none',
+    borderRadius: '10px',
+    fontSize: '12px',
+    fontWeight: 'bold',
+    display: 'inline-block',
+    transition: '0.2s'
+};
+
+const btnBack = { 
+    padding: '14px 35px', 
+    backgroundColor: 'transparent', 
+    color: 'white', 
+    border: '2px solid #4a5568', 
+    borderRadius: '12px', 
+    fontWeight: 'bold', 
+    cursor: 'pointer', 
+    transition: '0.3s' 
+};
 
 export default PesananSaya;

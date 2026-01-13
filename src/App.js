@@ -1,4 +1,3 @@
-import React from 'react';
 import DetailPesananUser from './pages/DetailPesananUser';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
@@ -7,6 +6,9 @@ import BuatPesanan from './pages/BuatPesanan';
 import PesananSaya from './pages/PesananSaya'; 
 import PesananMasuk from './pages/PesananMasuk';
 import StokBarang from './pages/StokBarang';
+import ProfilPerusahaan from './pages/ProfilPerusahaan';
+
+// --- BARIS IMPORT PROFIL TELAH DIHAPUS ---
 
 function App() {
     return (
@@ -18,6 +20,9 @@ function App() {
                 <Route path="/buat-pesanan/:motorId" element={<BuatPesanan />} />
                 <Route path="/pesanan-saya" element={<PesananSaya />} />
                 <Route path="/detail-pesanan/:id" element={<DetailPesananUser />} />
+                <Route path="/profil-perusahaan" element={<ProfilPerusahaan />} />
+                
+                {/* --- RUTE PROFIL TELAH DIHAPUS --- */}
 
                 {/* --- RUTE KHUSUS ADMIN --- */}
                 <Route path="/pesanan-masuk" element={<PesananMasuk />} />

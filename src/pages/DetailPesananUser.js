@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
+import { motion } from 'framer-motion';
 
 const DetailPesananUser = () => {
     const { id } = useParams();
@@ -9,6 +10,9 @@ const DetailPesananUser = () => {
     const componentRef = useRef();
     const [detail, setDetail] = useState(null);
     const token = localStorage.getItem('token');
+
+    // --- PENGATURAN ADMIN ---
+    const adminPhone = "6281234567890"; // Ganti dengan nomor WA Dealer Anda
 
     useEffect(() => {
         const fetchDetail = async () => {
@@ -25,30 +29,47 @@ const DetailPesananUser = () => {
         fetchDetail();
     }, [id, token]);
 
+    // Fungsi Cetak PDF
     const handlePrint = useReactToPrint({
-        content: () => componentRef.current,
-        documentTitle: `Invoice_CSM_${id}`,
-    });
+    contentRef: componentRef, // Gunakan contentRef, bukan content
+    documentTitle: `Invoice_CSM_${id}`,
+});
 
-    if (!detail) return <p style={{textAlign:'center', marginTop:'100px'}}>Memuat rincian...</p>;
+    // Fungsi Bayar via WA
+    const handleBayarWA = () => {
+        const message = `Halo Admin Cahaya Sakti Motor,\n\nSaya ingin konfirmasi pembayaran untuk:\n` +
+                        `*ID Transaksi:* #CSM-${detail.id}\n` +
+                        `*Unit:* ${detail.motor?.nama_model}\n` +
+                        `*Warna:* ${detail.warna}\n` +
+                        `*Total Harga:* Rp ${Number(detail.motor?.harga).toLocaleString('id-ID')}\n\n` +
+                        `Mohon instruksi selanjutnya untuk proses pengiriman/pengambilan unit. Terima kasih.`;
+        
+        const encodedMessage = encodeURIComponent(message);
+        window.open(`https://wa.me/${adminPhone}?text=${encodedMessage}`, '_blank');
+    };
+
+    if (!detail) return <p style={{textAlign:'center', marginTop:'100px', color: 'white'}}>Memuat rincian...</p>;
 
     return (
         <div style={pageWrapper}>
             <div style={container}>
+                {/* Header Tombol Akses Cepat */}
                 <div style={actionButtons}>
                     <button onClick={() => navigate(-1)} style={btnSecondary}>← Kembali</button>
-                    <button onClick={handlePrint} style={btnPrimary}>🖨️ Cetak / Simpan PDF</button>
+                    <button onClick={handlePrint} style={btnPrimary}>🖨️ Simpan PDF / Cetak</button>
                 </div>
 
+                {/* Area Invoice yang akan di-print */}
                 <div ref={componentRef} style={invoicePaper}>
                     <div style={header}>
-                        <h1 style={{color: '#e74c3c', margin: 0}}>CAHAYA SAKTI MOTOR</h1>
-                        <p style={{margin: 0, fontSize: '12px'}}>Dealer Resmi Sepeda Motor Honda</p>
+                        <h1 style={{color: '#e74c3c', margin: 0, fontWeight: '900'}}>CAHAYA SAKTI MOTOR</h1>
+                        <p style={{margin: 0, fontSize: '12px', letterSpacing: '2px'}}>DEALER RESMI SEPEDA MOTOR HONDA</p>
+                        <p style={{margin: '5px 0 0 0', fontSize: '10px', color: '#7f8c8d'}}>Jl. Raya Utama Boyolali, Jawa Tengah</p>
                     </div>
                     
                     <div style={divider}></div>
 
-                    <h3 style={{textAlign: 'center', marginBottom: '30px'}}>BUKTI PEMESANAN UNIT</h3>
+                    <h3 style={{textAlign: 'center', marginBottom: '30px', color: '#2c3e50'}}>BUKTI PEMESANAN UNIT</h3>
 
                     <div style={infoGrid}>
                         <div>
@@ -57,56 +78,82 @@ const DetailPesananUser = () => {
                         </div>
                         <div style={{textAlign: 'right'}}>
                             <p style={label}>TANGGAL PESAN</p>
-                            <p style={val}>{new Date(detail.created_at).toLocaleDateString('id-ID')}</p>
+                            <p style={val}>{new Date(detail.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
                         </div>
                     </div>
 
                     <div style={section}>
                         <h4 style={sectionTitle}>RINCIAN PEMESAN</h4>
-                        <p style={val}>{detail.nama_lengkap}</p>
-                        <p style={subVal}>{detail.nomor_wa}</p>
-                        <p style={subVal}>{detail.alamat}</p>
+                        <p style={val}>{detail.nama_lengkap.toUpperCase()}</p>
+                        <p style={subVal}>WhatsApp: {detail.nomor_wa}</p>
+                        <p style={subVal}>Alamat: {detail.alamat}</p>
                     </div>
 
                     <div style={section}>
                         <h4 style={sectionTitle}>RINCIAN UNIT</h4>
                         <div style={motorBox}>
-                            <h3 style={{margin: '0 0 5px 0', color: '#2c3e50'}}>{detail.motor?.nama_model}</h3>
-                            <p style={{margin: 0}}>Warna: <strong>{detail.warna}</strong></p>
-                            <p style={{margin: '10px 0 0 0'}}>Status: 
-                                <span style={{marginLeft: '10px', color: '#e67e22', fontWeight: 'bold'}}>
+                            <h3 style={{margin: '0 0 5px 0', color: '#e74c3c'}}>{detail.motor?.nama_model}</h3>
+                            <p style={{margin: 0, fontSize: '14px'}}>Warna Pilihan: <strong>{detail.warna}</strong></p>
+                            <p style={{margin: '10px 0 0 0', fontSize: '14px'}}>Status Pesanan: 
+                                <span style={{marginLeft: '10px', color: detail.status === 'lunas' ? '#27ae60' : '#e67e22', fontWeight: 'bold'}}>
                                     {detail.status.toUpperCase()}
                                 </span>
                             </p>
                         </div>
                     </div>
 
+                    <div style={{marginTop: '30px', textAlign: 'right', borderTop: '2px solid #eee', paddingTop: '20px'}}>
+                        <p style={{margin: 0, color: '#7f8c8d'}}>Total Pembayaran:</p>
+                        <h2 style={{margin: 0, color: '#2c3e50'}}>Rp {Number(detail.motor?.harga).toLocaleString('id-ID')}</h2>
+                    </div>
+
                     <div style={footer}>
-                        <p style={{fontSize: '11px', color: '#7f8c8d'}}>*Bukti ini sah sebagai tanda pemesanan unit di Cahaya Sakti Motor.</p>
-                        <p style={{fontSize: '11px', color: '#7f8c8d'}}>Dicetak pada: {new Date().toLocaleString()}</p>
+                        <p style={{fontSize: '11px', color: '#7f8c8d'}}>*Harap simpan invoice ini sebagai bukti pemesanan yang sah.</p>
+                        <p style={{fontSize: '11px', color: '#7f8c8d'}}>Dicetak otomatis oleh Sistem CSM pada: {new Date().toLocaleString()}</p>
                     </div>
                 </div>
+
+                {/* Tombol Bayar di Luar Invoice (Hanya muncul jika belum lunas) */}
+                {detail.status !== 'lunas' && (
+                    <motion.div 
+                        initial={{ y: 20, opacity: 0 }} 
+                        animate={{ y: 0, opacity: 1 }}
+                        style={{ marginTop: '30px', textAlign: 'center' }}
+                    >
+                        <p style={{ color: 'white', marginBottom: '15px', fontSize: '14px' }}>Sudah melakukan transfer? Klik tombol di bawah:</p>
+                        <button onClick={handleBayarWA} style={btnWhatsapp}>
+                            <span style={{fontSize: '20px'}}>📱</span> Konfirmasi Pembayaran via WhatsApp
+                        </button>
+                    </motion.div>
+                )}
             </div>
         </div>
     );
 };
 
-// --- STYLES DETAIL ---
-const pageWrapper = { minHeight: '100vh', backgroundImage: `url('/beranda1.png')`, backgroundSize: 'cover', backgroundPosition: 'center', padding: '50px 20px' };
+// --- STYLES (Penyesuaian agar lebih profesional) ---
+const pageWrapper = { minHeight: '100vh', backgroundColor: '#1a202c', padding: '50px 20px' };
 const container = { maxWidth: '800px', margin: '0 auto' };
 const actionButtons = { display: 'flex', justifyContent: 'space-between', marginBottom: '20px' };
+
 const btnPrimary = { padding: '12px 25px', backgroundColor: '#27ae60', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold' };
-const btnSecondary = { padding: '12px 25px', backgroundColor: '#fff', color: '#333', border: '1px solid #ddd', borderRadius: '10px', cursor: 'pointer' };
-const invoicePaper = { backgroundColor: 'white', padding: '50px', borderRadius: '2px', boxShadow: '0 0 20px rgba(0,0,0,0.2)' };
+const btnSecondary = { padding: '12px 25px', backgroundColor: '#4a5568', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer' };
+const btnWhatsapp = { 
+    width: '100%', padding: '18px', backgroundColor: '#25D366', color: 'white', border: 'none', borderRadius: '15px', 
+    cursor: 'pointer', fontWeight: 'bold', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+    boxShadow: '0 4px 15px rgba(37, 211, 102, 0.3)'
+};
+
+const invoicePaper = { backgroundColor: 'white', padding: '50px', borderRadius: '8px', boxShadow: '0 10px 25px rgba(0,0,0,0.3)', color: '#333' };
 const header = { textAlign: 'center', marginBottom: '20px' };
-const divider = { height: '3px', backgroundColor: '#e74c3c', marginBottom: '20px' };
+const divider = { height: '4px', backgroundColor: '#e74c3c', marginBottom: '20px' };
 const infoGrid = { display: 'flex', justifyContent: 'space-between', marginBottom: '40px' };
 const section = { marginBottom: '30px' };
-const sectionTitle = { fontSize: '12px', color: '#95a5a6', borderBottom: '1px solid #eee', paddingBottom: '5px', marginBottom: '10px' };
+const sectionTitle = { fontSize: '12px', color: '#95a5a6', borderBottom: '1px solid #eee', paddingBottom: '5px', marginBottom: '10px', fontWeight: 'bold' };
 const label = { fontSize: '11px', color: '#95a5a6', margin: 0 };
 const val = { fontSize: '16px', fontWeight: 'bold', margin: '5px 0' };
 const subVal = { fontSize: '14px', color: '#555', margin: '2px 0' };
-const motorBox = { padding: '20px', backgroundColor: '#f9f9f9', borderRadius: '10px', border: '1px solid #eee' };
+const motorBox = { padding: '20px', backgroundColor: '#fdf2f2', borderRadius: '10px', border: '1px solid #fee2e2' };
 const footer = { marginTop: '50px', borderTop: '1px solid #eee', paddingTop: '20px', textAlign: 'center' };
 
 export default DetailPesananUser;
