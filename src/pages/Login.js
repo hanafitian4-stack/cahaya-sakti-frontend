@@ -10,8 +10,8 @@ const Login = () => {
 
   // ✅ CRA: gunakan REACT_APP_API_BASE_URL (bukan REACT_APP_API_URL)
   // ✅ fallback aman: pakai domain web yang sedang dibuka
-  const API_BASE_URL =
-    process.env.REACT_APP_API_BASE_URL || window.location.origin;
+ const API_BASE_URL = "https://sakti.informatika24b1.com";
+
 
   // ✅ axios instance stabil
   const api = useMemo(() => {
@@ -33,8 +33,8 @@ const Login = () => {
     const endpoint = isRegister ? "/api/register" : "/api/login";
 
     const payload = isRegister
-      ? { name, email, password, role: "user" }
-      : { email, password };
+  ? { name, email, password }
+  : { email, password };
 
     try {
       const response = await api.post(endpoint, payload);
@@ -123,14 +123,16 @@ const Login = () => {
 
           <div style={inputGroup}>
             <label style={labelStyle}>Password</label>
-            <input
-              type="password"
-              required
-              placeholder="Masukkan password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              style={inputStyle}
-            />
+           <input
+  type="password"
+  required
+  minLength={8} // ✅ WAJIB
+  placeholder="Minimal 8 karakter"
+  value={password}
+  onChange={(e) => setPassword(e.target.value)}
+  style={inputStyle}
+/>
+
           </div>
 
           <button
